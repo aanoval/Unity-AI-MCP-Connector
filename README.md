@@ -72,11 +72,13 @@ Install the package into a Unity project:
 node cli/unity-ai.js /path/to/UnityProject install
 ```
 
-Open Unity, then use:
+Open Unity. The local server auto-starts by default in `0.3.0+`. You can also manage it manually:
 
 ```text
 Tools > Unity AI Game Maker > Start Local Server
 Tools > Unity AI Game Maker > Print Token
+Tools > Unity AI Game Maker > Run Batch File...
+Tools > Unity AI Game Maker > Capture Menu Screenshots
 ```
 
 Call Unity AI MCP Game Maker with the prototype CLI:
@@ -86,6 +88,8 @@ node cli/unity-ai.js /path/to/UnityProject doctor
 node cli/unity-ai.js /path/to/UnityProject health
 node cli/unity-ai.js /path/to/UnityProject tools
 node cli/unity-ai.js /path/to/UnityProject call scene.listOpen '{}'
+node cli/unity-ai.js /path/to/UnityProject unity-batch ./examples/batch.menu-screenshots.json
+node cli/unity-ai.js /path/to/UnityProject capture-scenes --output ../menu-screenshots --filter menu
 ```
 
 The CLI reads the generated token from:
@@ -143,6 +147,7 @@ The starter Unity package includes:
 - `console.clear`
 - `console.read`
 - `screenshot.capture`
+- `screenshots.captureScenes`
 - `light.create`
 - `light.set`
 - `audio.source.add`
@@ -199,8 +204,30 @@ Recommended UI workflow for agents:
 
 1. Create UI with a style preset.
 2. Run `ui.validate`.
-3. Capture a screenshot with `screenshot.capture`.
+3. Capture a screenshot with `screenshot.capture` or `screenshots.captureScenes`.
 4. Adjust layout if validation or screenshot review shows overlap, weak contrast, or poor proportions.
+
+Capture all menu scenes without a running HTTP server:
+
+```bash
+node cli/unity-ai.js /path/to/UnityProject capture-scenes --output ../menu-screenshots --filter menu --width 1080 --height 1920
+```
+
+Screenshot args:
+
+- `outputPath` — preferred PNG destination
+- `path` — legacy alias for `outputPath`
+- `source` — `camera` (batch-safe) or `gameView` (editor Game View)
+- `cameraPath` — camera hierarchy path, separate from output path
+
+Batch mode entry point:
+
+```bash
+Unity -batchmode -quit \
+  -executeMethod Alday.UnityAiGameMaker.Editor.UnityAiGameMakerBatch.RunFromEnvironment
+```
+
+Do not use `-nographics` when running screenshot tools.
 
 Open a scene before editing it:
 

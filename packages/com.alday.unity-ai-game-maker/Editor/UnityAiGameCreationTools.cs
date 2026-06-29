@@ -171,60 +171,7 @@ namespace Alday.UnityAiGameMaker.Editor
             return new { supported = true, count, entries };
         }
 
-        public static object CaptureScreenshot(JObject args)
-        {
-            var path = args.Value<string>("path") ?? "Temp/UnityAiGameMaker/screenshot.png";
-            var width = args.Value<int?>("width") ?? 1280;
-            var height = args.Value<int?>("height") ?? 720;
-            var camera = ResolveCamera(args);
-            var absolutePath = Path.IsPathRooted(path) ? path : Path.GetFullPath(path);
-
-            Directory.CreateDirectory(Path.GetDirectoryName(absolutePath) ?? ".");
-            var previousTarget = camera.targetTexture;
-            var previousActive = RenderTexture.active;
-            var overlayCanvases = UnityAiTools.AllSceneObjects()
-                .Select(go => go.GetComponent<Canvas>())
-                .Where(canvas => canvas != null && canvas.renderMode == RenderMode.ScreenSpaceOverlay)
-                .ToArray();
-            var previousCanvasCameras = overlayCanvases.Select(canvas => canvas.worldCamera).ToArray();
-            var previousCanvasDistances = overlayCanvases.Select(canvas => canvas.planeDistance).ToArray();
-            var renderTexture = new RenderTexture(width, height, 24);
-            var texture = new Texture2D(width, height, TextureFormat.RGB24, false);
-            try
-            {
-                for (var i = 0; i < overlayCanvases.Length; i++)
-                {
-                    overlayCanvases[i].renderMode = RenderMode.ScreenSpaceCamera;
-                    overlayCanvases[i].worldCamera = camera;
-                    overlayCanvases[i].planeDistance = 1f + i * 0.02f;
-                }
-                camera.targetTexture = renderTexture;
-                RenderTexture.active = renderTexture;
-                camera.Render();
-                texture.ReadPixels(new Rect(0, 0, width, height), 0, 0);
-                texture.Apply();
-                File.WriteAllBytes(absolutePath, texture.EncodeToPNG());
-            }
-            finally
-            {
-                for (var i = 0; i < overlayCanvases.Length; i++)
-                {
-                    if (overlayCanvases[i] == null)
-                        continue;
-                    overlayCanvases[i].renderMode = RenderMode.ScreenSpaceOverlay;
-                    overlayCanvases[i].worldCamera = previousCanvasCameras[i];
-                    overlayCanvases[i].planeDistance = previousCanvasDistances[i];
-                }
-                camera.targetTexture = previousTarget;
-                RenderTexture.active = previousActive;
-                UnityEngine.Object.DestroyImmediate(texture);
-                UnityEngine.Object.DestroyImmediate(renderTexture);
-            }
-
-            if (path.StartsWith("Assets/", StringComparison.Ordinal))
-                AssetDatabase.Refresh();
-            return new { path, absolutePath, width, height, camera = UnityAiTools.GetPath(camera.gameObject) };
-        }
+        public static object CaptureScreenshot(JObject args) => UnityAiScreenshotTools.Capture(args);
 
         public static object CreateLight(JObject args)
         {
@@ -713,26 +660,6 @@ namespace Alday.UnityAiGameMaker.Editor
             Undo.RegisterCreatedObjectUndo(root, "Create Joystick via Unity AI Game Maker");
             EditorSceneManager.MarkSceneDirty(root.scene);
             return root;
-        }
-
-        static Camera ResolveCamera(JObject args)
-        {
-            var path = args.Value<string>("cameraPath") ?? args.Value<string>("path");
-            if (!string.IsNullOrWhiteSpace(path))
-            {
-                var target = UnityAiTools.FindByPath(path);
-                var camera = target == null ? null : target.GetComponent<Camera>();
-                if (camera != null)
-                    return camera;
-            }
-
-            if (Camera.main != null)
-                return Camera.main;
-
-            var found = UnityEngine.Object.FindObjectsByType<Camera>(FindObjectsInactive.Exclude).FirstOrDefault();
-            if (found == null)
-                throw new InvalidOperationException("No Camera found.");
-            return found;
         }
 
         static Component ResolveComponent(GameObject target, JObject args)

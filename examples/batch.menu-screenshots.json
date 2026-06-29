@@ -1,0 +1,13 @@
+{
+  "commands": [
+    {
+      "tool": "screenshots.captureMenus",
+      "args": {
+        "output": "../menu-screenshots",
+        "width": 1080,
+        "height": 1920,
+        "source": "camera"
+      }
+    }
+  ]
+}

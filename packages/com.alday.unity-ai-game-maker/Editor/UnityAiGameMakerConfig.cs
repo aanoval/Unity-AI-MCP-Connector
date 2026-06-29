@@ -13,7 +13,7 @@ namespace Alday.UnityAiGameMaker.Editor
         public string bindHost = "127.0.0.1";
         public int port = 6421;
         public bool authRequired = true;
-        public bool autoStart = false;
+        public bool autoStart = true;
         public bool allowDangerousTools = false;
         public string token = "";
 

@@ -1,0 +1,10 @@
+{
+  "tool": "screenshots.captureScenes",
+  "args": {
+    "filter": "menu",
+    "outputDir": "../menu-screenshots",
+    "width": 1080,
+    "height": 1920,
+    "source": "camera"
+  }
+}

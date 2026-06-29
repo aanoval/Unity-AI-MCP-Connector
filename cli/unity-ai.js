@@ -24,6 +24,7 @@ function usage() {
   unity-ai <projectPath> config
   unity-ai <projectPath> doctor
   unity-ai <projectPath> unity-batch <jsonFile> [--unity <path>]
+  unity-ai <projectPath> capture-scenes [--output <dir>] [--filter menu|buildSettings|gameplay|all] [--width <n>] [--height <n>] [--source camera|gameView] [--unity <path>]
   unity-ai <projectPath> sample-runner3d [--unity <path>]
   unity-ai <projectPath> health
   unity-ai <projectPath> tools
@@ -33,6 +34,8 @@ Examples:
   unity-ai /path/to/project install
   unity-ai /path/to/project config
   unity-ai /path/to/project doctor
+  unity-ai /path/to/project unity-batch ./examples/batch.menu-screenshots.json
+  unity-ai /path/to/project capture-scenes --output ../menu-screenshots --filter menu --width 1080 --height 1920
   unity-ai /path/to/project sample-runner3d --unity /Applications/Unity/Hub/Editor/6000.5.1f1/Unity.app/Contents/MacOS/Unity
   unity-ai /path/to/project health
   unity-ai /path/to/project tools
@@ -173,6 +176,21 @@ function runUnityBatchPhase(projectPath, commands, rest = []) {
 
 function expandBatchMacros(commands) {
   return commands.flatMap((command) => {
+    if (command?.tool === 'screenshots.captureMenus') {
+      return [{
+        tool: 'screenshots.captureScenes',
+        args: {
+          filter: 'menu',
+          width: command.args?.width ?? 1080,
+          height: command.args?.height ?? 1920,
+          source: command.args?.source ?? 'camera',
+          outputDir: command.args?.outputDir ?? command.args?.output,
+          namePattern: command.args?.namePattern,
+          cameraPath: command.args?.cameraPath,
+        },
+      }];
+    }
+
     if (command?.tool !== 'script.createAndAttach') {
       return [command];
     }
@@ -281,6 +299,27 @@ function readBatchFile(jsonFile) {
   throw new Error('Batch JSON must be an array or an object with a commands array.');
 }
 
+function captureScenes(projectPath, rest) {
+  const outputDir = parseFlagValue(rest, '--output');
+  const filter = parseFlagValue(rest, '--filter') ?? 'menu';
+  const width = Number.parseInt(parseFlagValue(rest, '--width') ?? '1080', 10);
+  const height = Number.parseInt(parseFlagValue(rest, '--height') ?? '1920', 10);
+  const source = parseFlagValue(rest, '--source') ?? 'camera';
+
+  return runUnityBatch(projectPath, [
+    {
+      tool: 'screenshots.captureScenes',
+      args: {
+        ...(outputDir ? { outputDir } : {}),
+        filter,
+        width,
+        height,
+        source,
+      },
+    },
+  ], rest);
+}
+
 function createRunner3DSample(projectPath, rest) {
   const install = installPackage(projectPath, rest);
   const scripts = runUnityBatch(projectPath, [
@@ -331,7 +370,7 @@ function installPackage(projectPath, rest) {
     previousValue: previousValue ?? null,
     removedLegacyPackageIds,
     dependencyValue,
-    nextStep: 'Open the Unity project and start Tools > Unity AI Game Maker > Start Local Server.'
+    nextStep: 'Open the Unity project. The local server auto-starts by default, or use batch mode via unity-batch / capture-scenes.'
   };
 }
 
@@ -378,7 +417,7 @@ async function doctor(projectPath) {
     health,
     nextStep: checks.serverReachable
       ? null
-      : 'Open Unity and start Tools > Unity AI Game Maker > Start Local Server.'
+      : 'Open Unity (server auto-starts by default) or use: node cli/unity-ai.js <projectPath> unity-batch <jsonFile>'
   };
 }
 
@@ -429,6 +468,11 @@ async function main() {
       throw new Error('Missing batch JSON file.');
     }
     console.log(JSON.stringify(runUnityBatch(projectPath, readBatchFile(jsonFile), rest.slice(1)), null, 2));
+    return;
+  }
+
+  if (command === 'capture-scenes') {
+    console.log(JSON.stringify(captureScenes(projectPath, rest), null, 2));
     return;
   }
 

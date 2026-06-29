@@ -136,7 +136,7 @@ namespace Alday.UnityAiGameMaker.Editor
                     {
                         ok = true,
                         name = "Unity AI Game Maker",
-                        version = "0.2.0",
+                        version = "0.3.0",
                         bindHost = config.bindHost,
                         port = config.port,
                         authRequired = config.authRequired
