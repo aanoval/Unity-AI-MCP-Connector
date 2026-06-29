@@ -1,6 +1,6 @@
 {
-  "name": "Alday.UnityAiConnector.Editor",
-  "rootNamespace": "Alday.UnityAiConnector.Editor",
+  "name": "Alday.UnityAiGameMaker.Editor",
+  "rootNamespace": "Alday.UnityAiGameMaker.Editor",
   "references": [
     "Unity.Newtonsoft.Json",
     "UnityEngine.UI"

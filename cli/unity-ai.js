@@ -6,7 +6,8 @@ import path from 'node:path';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
-const PACKAGE_ID = 'com.alday.unity-ai-connector';
+const PACKAGE_ID = 'com.alday.unity-ai-game-maker';
+const LEGACY_PACKAGE_IDS = ['com.alday.unity-ai-connector'];
 const DEFAULT_PORT = 6421;
 
 function repoRoot() {
@@ -57,16 +58,16 @@ function writeJson(filePath, value) {
 }
 
 function readConfig(projectPath) {
-  const configPath = path.join(projectPath, 'UserSettings', 'UnityAiConnector.json');
+  const configPath = path.join(projectPath, 'UserSettings', 'UnityAiGameMaker.json');
   if (!fs.existsSync(configPath)) {
-    throw new Error(`Config not found: ${configPath}. Start the connector once from Unity first.`);
+    throw new Error(`Config not found: ${configPath}. Start Unity AI Game Maker once from Unity first.`);
   }
 
   return readJson(configPath);
 }
 
 function readConfigIfExists(projectPath) {
-  const configPath = path.join(projectPath, 'UserSettings', 'UnityAiConnector.json');
+  const configPath = path.join(projectPath, 'UserSettings', 'UnityAiGameMaker.json');
   return fs.existsSync(configPath) ? readJson(configPath) : null;
 }
 
@@ -142,13 +143,15 @@ function runUnityBatchPhase(projectPath, commands, rest = []) {
     '-projectPath',
     projectPath,
     '-executeMethod',
-    'Alday.UnityAiConnector.Editor.UnityAiConnectorBatch.RunFromEnvironment',
+    'Alday.UnityAiGameMaker.Editor.UnityAiGameMakerBatch.RunFromEnvironment',
     '-logFile',
     '-'
   ], {
     encoding: 'utf8',
     env: {
       ...process.env,
+      UNITY_AI_GAME_MAKER_BATCH_FILE: batchFile,
+      UNITY_AI_GAME_MAKER_BATCH_OUT: outputFile,
       UNITY_AI_CONNECTOR_BATCH_FILE: batchFile,
       UNITY_AI_CONNECTOR_BATCH_OUT: outputFile,
     },
@@ -293,7 +296,7 @@ function createRunner3DSample(projectPath, rest) {
     scripts,
     content,
     projectPath,
-    nextStep: 'Open the Unity project and play Assets/UnityAiConnectorSample/Scenes/MainMenu.unity.'
+    nextStep: 'Open the Unity project and play Assets/UnityAiGameMakerSample/Scenes/MainMenu.unity.'
   };
 }
 
@@ -310,6 +313,14 @@ function installPackage(projectPath, rest) {
 
   const dependencyValue = `file:${selectedPackagePath}`;
   const previousValue = manifest.dependencies[PACKAGE_ID];
+  const removedLegacyPackageIds = [];
+  for (const legacyPackageId of LEGACY_PACKAGE_IDS) {
+    if (manifest.dependencies[legacyPackageId]) {
+      delete manifest.dependencies[legacyPackageId];
+      removedLegacyPackageIds.push(legacyPackageId);
+    }
+  }
+
   manifest.dependencies[PACKAGE_ID] = dependencyValue;
   writeJson(manifestPath, manifest);
 
@@ -318,8 +329,9 @@ function installPackage(projectPath, rest) {
     manifestPath,
     packageId: PACKAGE_ID,
     previousValue: previousValue ?? null,
+    removedLegacyPackageIds,
     dependencyValue,
-    nextStep: 'Open the Unity project and start Tools > Unity AI Connector > Start Local Server.'
+    nextStep: 'Open the Unity project and start Tools > Unity AI Game Maker > Start Local Server.'
   };
 }
 
@@ -327,7 +339,7 @@ function printConfig(projectPath) {
   const config = readConfig(projectPath);
   return {
     ok: true,
-    configPath: path.join(projectPath, 'UserSettings', 'UnityAiConnector.json'),
+    configPath: path.join(projectPath, 'UserSettings', 'UnityAiGameMaker.json'),
     bindHost: config.bindHost ?? '127.0.0.1',
     port: config.port ?? DEFAULT_PORT,
     authRequired: config.authRequired !== false,
@@ -366,7 +378,7 @@ async function doctor(projectPath) {
     health,
     nextStep: checks.serverReachable
       ? null
-      : 'Open Unity and start Tools > Unity AI Connector > Start Local Server.'
+      : 'Open Unity and start Tools > Unity AI Game Maker > Start Local Server.'
   };
 }
 

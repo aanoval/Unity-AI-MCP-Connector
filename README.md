@@ -21,7 +21,7 @@ AI agents are useful inside Unity when they can do real game-making work:
 - capture screenshots and logs
 - prepare builds and run tests
 
-Most existing connectors prove that AI can talk to Unity, but this project is aimed at a more specific search intent: **Unity AI for making games**. It starts from a small trusted local core, then adds game-maker workflows in layers.
+Most existing Unity AI bridges prove that agents can talk to Unity, but this project is aimed at a more specific search intent: **Unity AI for making games**. It starts from a small trusted local core, then adds game-maker workflows in layers.
 
 ## Security First
 
@@ -50,7 +50,7 @@ This repository is an early foundation for AI-assisted Unity game creation. It a
 - dependency-free Node CLI
 - architecture, roadmap, and security docs
 
-The Unity package id is currently `com.alday.unity-ai-connector` for compatibility with existing sample projects. The public product direction is **Unity AI MCP Game Maker**.
+The Unity package id is `com.alday.unity-ai-game-maker`.
 
 ## Repository Layout
 
@@ -60,7 +60,7 @@ The Unity package id is currently `com.alday.unity-ai-connector` for compatibili
 |-- docs/                                 # Security, architecture, roadmap
 |-- examples/                             # Example policy and requests
 |-- packages/
-|   `-- com.alday.unity-ai-connector/     # Unity Editor package
+|   `-- com.alday.unity-ai-game-maker/     # Unity Editor package
 `-- server/                               # MCP adapter notes and future server layer
 ```
 
@@ -75,11 +75,11 @@ node cli/unity-ai.js /path/to/UnityProject install
 Open Unity, then use:
 
 ```text
-Tools > Unity AI Connector > Start Local Server
-Tools > Unity AI Connector > Print Token
+Tools > Unity AI Game Maker > Start Local Server
+Tools > Unity AI Game Maker > Print Token
 ```
 
-Call the connector with the prototype CLI:
+Call Unity AI MCP Game Maker with the prototype CLI:
 
 ```bash
 node cli/unity-ai.js /path/to/UnityProject doctor
@@ -91,7 +91,7 @@ node cli/unity-ai.js /path/to/UnityProject call scene.listOpen '{}'
 The CLI reads the generated token from:
 
 ```text
-UserSettings/UnityAiConnector.json
+UserSettings/UnityAiGameMaker.json
 ```
 
 ## Sample Game
@@ -102,7 +102,7 @@ Create a complete 3D runner sample in a fresh Unity 6000.5 project:
 node cli/unity-ai.js /path/to/UnityProject sample-runner3d --unity /Applications/Unity/Hub/Editor/6000.5.1f1/Unity.app/Contents/MacOS/Unity
 ```
 
-The sample is generated through connector batch tools and includes:
+The sample is generated through game-maker batch tools and includes:
 
 - `MainMenu` and `Gameplay` scenes
 - camera, lights, Canvas UI, EventSystem
@@ -311,4 +311,4 @@ Longer-term:
 
 ## Design Principle
 
-Power is useful only when it is accountable. This connector should make Unity easier for AI agents to operate, while making every high-risk action visible, explicit, and reversible.
+Power is useful only when it is accountable. Unity AI MCP Game Maker should make Unity easier for AI agents to operate, while making every high-risk action visible, explicit, and reversible.

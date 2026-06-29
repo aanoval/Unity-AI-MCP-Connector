@@ -6,9 +6,9 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using UnityEditor;
 
-namespace Alday.UnityAiConnector.Editor
+namespace Alday.UnityAiGameMaker.Editor
 {
-    public static class UnityAiConnectorBatch
+    public static class UnityAiGameMakerBatch
     {
         sealed class BatchPayload
         {
@@ -23,11 +23,13 @@ namespace Alday.UnityAiConnector.Editor
 
         public static void RunFromEnvironment()
         {
-            var inputPath = Environment.GetEnvironmentVariable("UNITY_AI_CONNECTOR_BATCH_FILE");
-            var outputPath = Environment.GetEnvironmentVariable("UNITY_AI_CONNECTOR_BATCH_OUT");
+            var inputPath = Environment.GetEnvironmentVariable("UNITY_AI_GAME_MAKER_BATCH_FILE")
+                ?? Environment.GetEnvironmentVariable("UNITY_AI_CONNECTOR_BATCH_FILE");
+            var outputPath = Environment.GetEnvironmentVariable("UNITY_AI_GAME_MAKER_BATCH_OUT")
+                ?? Environment.GetEnvironmentVariable("UNITY_AI_CONNECTOR_BATCH_OUT");
 
             if (string.IsNullOrWhiteSpace(inputPath))
-                throw new InvalidOperationException("UNITY_AI_CONNECTOR_BATCH_FILE is required.");
+                throw new InvalidOperationException("UNITY_AI_GAME_MAKER_BATCH_FILE is required.");
 
             if (string.IsNullOrWhiteSpace(outputPath))
                 outputPath = inputPath + ".out.json";
@@ -36,7 +38,7 @@ namespace Alday.UnityAiConnector.Editor
             {
                 var payload = JsonConvert.DeserializeObject<BatchPayload>(File.ReadAllText(inputPath))
                     ?? new BatchPayload();
-                var config = UnityAiConnectorConfig.LoadOrCreate();
+                var config = UnityAiGameMakerConfig.LoadOrCreate();
                 var results = new List<object>();
 
                 foreach (var command in payload.commands)

@@ -6,7 +6,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
 
-namespace Alday.UnityAiConnector.Editor
+namespace Alday.UnityAiGameMaker.Editor
 {
     public sealed class UnityAiGameStylePreset
     {
@@ -28,7 +28,7 @@ namespace Alday.UnityAiConnector.Editor
 
     public static class UnityAiGameStyle
     {
-        const string GeneratedFolder = "Assets/UnityAiConnectorGenerated/UI";
+        const string GeneratedFolder = "Assets/UnityAiGameMakerGenerated/UI";
         const string RoundedSpritePath = GeneratedFolder + "/rounded_rect_32.png";
 
         public static UnityAiGameStylePreset FromArgs(JObject args)

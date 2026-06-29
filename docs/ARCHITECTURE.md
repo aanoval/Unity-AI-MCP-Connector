@@ -1,13 +1,13 @@
 # Architecture
 
-Unity AI MCP Connector has three layers.
+Unity AI MCP Game Maker has three layers.
 
 ## 1. Unity Editor Package
 
 The Unity package lives at:
 
 ```text
-packages/com.alday.unity-ai-connector
+packages/com.alday.unity-ai-game-maker
 ```
 
 It owns Unity-specific behavior:
@@ -49,14 +49,14 @@ or:
 }
 ```
 
-This stable local command layer keeps the connector useful even before MCP support is added.
+This stable local command layer keeps the game-maker toolchain useful even before MCP support is added.
 
 ## 3. CLI and Future MCP Adapter
 
 The CLI starts simple:
 
 - read project config
-- call local connector
+- call the local Unity AI MCP Game Maker server
 - print JSON
 
 The MCP adapter should sit on top of the same command protocol instead of becoming the core. This keeps the system portable across AI clients.

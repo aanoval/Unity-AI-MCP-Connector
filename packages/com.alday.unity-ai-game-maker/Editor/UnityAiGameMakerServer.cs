@@ -9,65 +9,65 @@ using Newtonsoft.Json.Linq;
 using UnityEditor;
 using UnityEngine;
 
-namespace Alday.UnityAiConnector.Editor
+namespace Alday.UnityAiGameMaker.Editor
 {
     [InitializeOnLoad]
-    public static class UnityAiConnectorServer
+    public static class UnityAiGameMakerServer
     {
         static HttpListener listener;
         static Thread serverThread;
         static bool isRunning;
-        static UnityAiConnectorConfig config;
+        static UnityAiGameMakerConfig config;
 
-        static UnityAiConnectorServer()
+        static UnityAiGameMakerServer()
         {
-            config = UnityAiConnectorConfig.LoadOrCreate();
+            config = UnityAiGameMakerConfig.LoadOrCreate();
             EditorApplication.update += UnityAiMainThread.Pump;
 
             if (config.autoStart)
                 Start();
         }
 
-        [MenuItem("Tools/Unity AI Connector/Start Local Server")]
+        [MenuItem("Tools/Unity AI Game Maker/Start Local Server")]
         public static void StartFromMenu()
         {
-            config = UnityAiConnectorConfig.LoadOrCreate();
+            config = UnityAiGameMakerConfig.LoadOrCreate();
             Start();
         }
 
-        [MenuItem("Tools/Unity AI Connector/Stop Local Server")]
+        [MenuItem("Tools/Unity AI Game Maker/Stop Local Server")]
         public static void StopFromMenu()
         {
             Stop();
         }
 
-        [MenuItem("Tools/Unity AI Connector/Print Token")]
+        [MenuItem("Tools/Unity AI Game Maker/Print Token")]
         public static void PrintToken()
         {
-            config = UnityAiConnectorConfig.LoadOrCreate();
-            Debug.Log($"Unity AI Connector token: {config.token}");
-            Debug.Log($"Unity AI Connector config: {UnityAiConnectorConfig.ConfigPath}");
+            config = UnityAiGameMakerConfig.LoadOrCreate();
+            Debug.Log($"Unity AI Game Maker token: {config.token}");
+            Debug.Log($"Unity AI Game Maker config: {UnityAiGameMakerConfig.ConfigPath}");
         }
 
-        [MenuItem("Tools/Unity AI Connector/Open Config")]
+        [MenuItem("Tools/Unity AI Game Maker/Open Config")]
         public static void OpenConfig()
         {
-            config = UnityAiConnectorConfig.LoadOrCreate();
-            EditorUtility.RevealInFinder(UnityAiConnectorConfig.ConfigPath);
+            config = UnityAiGameMakerConfig.LoadOrCreate();
+            EditorUtility.RevealInFinder(UnityAiGameMakerConfig.ConfigPath);
         }
 
         public static void Start()
         {
-            config = UnityAiConnectorConfig.LoadOrCreate();
+            config = UnityAiGameMakerConfig.LoadOrCreate();
             if (isRunning)
             {
-                Debug.Log("Unity AI Connector server is already running.");
+                Debug.Log("Unity AI Game Maker server is already running.");
                 return;
             }
 
             if (config.bindHost != "127.0.0.1" && config.bindHost != "localhost")
             {
-                Debug.LogError("Unity AI Connector refuses to bind to non-loopback host by default.");
+                Debug.LogError("Unity AI Game Maker refuses to bind to non-loopback host by default.");
                 return;
             }
 
@@ -79,11 +79,11 @@ namespace Alday.UnityAiConnector.Editor
             serverThread = new Thread(ServerLoop)
             {
                 IsBackground = true,
-                Name = "unity-ai-connector"
+                Name = "unity-ai-game-maker"
             };
             serverThread.Start();
 
-            Debug.Log($"Unity AI Connector listening on http://{config.bindHost}:{config.port}");
+            Debug.Log($"Unity AI Game Maker listening on http://{config.bindHost}:{config.port}");
         }
 
         public static void Stop()
@@ -97,7 +97,7 @@ namespace Alday.UnityAiConnector.Editor
             }
             catch (Exception ex)
             {
-                Debug.LogWarning($"Unity AI Connector stop warning: {ex.Message}");
+                Debug.LogWarning($"Unity AI Game Maker stop warning: {ex.Message}");
             }
             finally
             {
@@ -135,7 +135,7 @@ namespace Alday.UnityAiConnector.Editor
                     WriteJson(context, 200, new
                     {
                         ok = true,
-                        name = "Unity AI Connector",
+                        name = "Unity AI Game Maker",
                         version = "0.2.0",
                         bindHost = config.bindHost,
                         port = config.port,

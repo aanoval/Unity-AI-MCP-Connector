@@ -1,7 +1,7 @@
 {
-  "name": "unity-ai-mcp-connector-cli",
+  "name": "unity-ai-mcp-game-maker-cli",
   "version": "0.2.0",
-  "description": "Dependency-free CLI prototype for Unity AI MCP Connector.",
+  "description": "Dependency-free CLI prototype for Unity AI MCP Game Maker.",
   "type": "module",
   "bin": {
     "unity-ai": "./unity-ai.js"

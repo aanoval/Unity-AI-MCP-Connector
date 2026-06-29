@@ -9,11 +9,11 @@ using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-namespace Alday.UnityAiConnector.Editor
+namespace Alday.UnityAiGameMaker.Editor
 {
     public static class UnityAiRunner3DSampleBuilder
     {
-        const string Root = "Assets/UnityAiConnectorSample";
+        const string Root = "Assets/UnityAiGameMakerSample";
         const string Scenes = Root + "/Scenes";
         const string Scripts = Root + "/Scripts";
         const string Prefabs = Root + "/Prefabs";
@@ -91,7 +91,7 @@ namespace Alday.UnityAiConnector.Editor
 
         static void EnsureFolders()
         {
-            EnsureFolder("Assets", "UnityAiConnectorSample");
+            EnsureFolder("Assets", "UnityAiGameMakerSample");
             EnsureFolder(Root, "Scenes");
             EnsureFolder(Root, "Scripts");
             EnsureFolder(Root, "Prefabs");
@@ -160,7 +160,7 @@ namespace Alday.UnityAiConnector.Editor
 
             var canvas = CreateCanvas("Main Menu Canvas");
             CreateText(canvas.transform, "Title", "UNITY AI RUNNER", 48, new Vector2(0, 155), new Vector2(720, 80));
-            CreateText(canvas.transform, "Subtitle", "Built end-to-end by Unity AI MCP Connector", 22, new Vector2(0, 95), new Vector2(720, 44));
+            CreateText(canvas.transform, "Subtitle", "Built end-to-end by Unity AI MCP Game Maker", 22, new Vector2(0, 95), new Vector2(720, 44));
             CreateButton(canvas.transform, "Play Button", "PLAY", new Vector2(0, 20), "Gameplay");
             CreateText(canvas.transform, "Footer", "Collect coins, dodge red blocks, reach the blue gate.", 18, new Vector2(0, -115), new Vector2(780, 40));
 

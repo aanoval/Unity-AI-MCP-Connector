@@ -13,7 +13,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-namespace Alday.UnityAiConnector.Editor
+namespace Alday.UnityAiGameMaker.Editor
 {
     public static class UnityAiGameCreationTools
     {
@@ -45,7 +45,7 @@ namespace Alday.UnityAiConnector.Editor
             if (string.IsNullOrWhiteSpace(member))
                 throw new ArgumentException("property, field, or member is required.");
 
-            Undo.RecordObject(component, "Set Component Property via Unity AI Connector");
+            Undo.RecordObject(component, "Set Component Property via Unity AI Game Maker");
             SetMember(component, member, args["value"]);
             EditorUtility.SetDirty(component);
             EditorSceneManager.MarkSceneDirty(target.scene);
@@ -70,7 +70,7 @@ namespace Alday.UnityAiConnector.Editor
             if (body == null)
                 throw new InvalidOperationException("Target does not have Rigidbody.");
 
-            Undo.RecordObject(body, "Set Rigidbody via Unity AI Connector");
+            Undo.RecordObject(body, "Set Rigidbody via Unity AI Game Maker");
             ApplyRigidbody(body, args);
             EditorUtility.SetDirty(body);
             EditorSceneManager.MarkSceneDirty(target.scene);
@@ -95,7 +95,7 @@ namespace Alday.UnityAiConnector.Editor
             if (collider == null)
                 throw new InvalidOperationException("Target does not have Collider.");
 
-            Undo.RecordObject(collider, "Set Collider via Unity AI Connector");
+            Undo.RecordObject(collider, "Set Collider via Unity AI Game Maker");
             ApplyCollider(collider, args);
             EditorUtility.SetDirty(collider);
             EditorSceneManager.MarkSceneDirty(target.scene);
@@ -173,7 +173,7 @@ namespace Alday.UnityAiConnector.Editor
 
         public static object CaptureScreenshot(JObject args)
         {
-            var path = args.Value<string>("path") ?? "Temp/UnityAiConnector/screenshot.png";
+            var path = args.Value<string>("path") ?? "Temp/UnityAiGameMaker/screenshot.png";
             var width = args.Value<int?>("width") ?? 1280;
             var height = args.Value<int?>("height") ?? 720;
             var camera = ResolveCamera(args);
@@ -233,7 +233,7 @@ namespace Alday.UnityAiConnector.Editor
             UnityAiEditorControlTools.ApplyParent(go, args);
             UnityAiEditorControlTools.ApplyTransform(go, args);
             ApplyLight(go.GetComponent<Light>(), args);
-            Undo.RegisterCreatedObjectUndo(go, "Create Light via Unity AI Connector");
+            Undo.RegisterCreatedObjectUndo(go, "Create Light via Unity AI Game Maker");
             EditorSceneManager.MarkSceneDirty(go.scene);
             return DescribeGameObject(go);
         }
@@ -245,7 +245,7 @@ namespace Alday.UnityAiConnector.Editor
             if (light == null)
                 throw new InvalidOperationException("Target does not have Light.");
 
-            Undo.RecordObject(light, "Set Light via Unity AI Connector");
+            Undo.RecordObject(light, "Set Light via Unity AI Game Maker");
             ApplyLight(light, args);
             EditorUtility.SetDirty(light);
             EditorSceneManager.MarkSceneDirty(target.scene);
@@ -270,7 +270,7 @@ namespace Alday.UnityAiConnector.Editor
             if (source == null)
                 throw new InvalidOperationException("Target does not have AudioSource.");
 
-            Undo.RecordObject(source, "Set AudioSource via Unity AI Connector");
+            Undo.RecordObject(source, "Set AudioSource via Unity AI Game Maker");
             ApplyAudioSource(source, args);
             EditorUtility.SetDirty(source);
             EditorSceneManager.MarkSceneDirty(target.scene);
@@ -386,7 +386,7 @@ namespace Alday.UnityAiConnector.Editor
                 });
             }
 
-            Undo.RegisterCreatedObjectUndo(root, "Create Menu via Unity AI Connector");
+            Undo.RegisterCreatedObjectUndo(root, "Create Menu via Unity AI Game Maker");
             EditorSceneManager.MarkSceneDirty(root.scene);
             return DescribeGameObject(root);
         }
@@ -413,7 +413,7 @@ namespace Alday.UnityAiConnector.Editor
                 ["fontSize"] = 22
             });
 
-            Undo.RegisterCreatedObjectUndo(root, "Create HUD via Unity AI Connector");
+            Undo.RegisterCreatedObjectUndo(root, "Create HUD via Unity AI Game Maker");
             EditorSceneManager.MarkSceneDirty(root.scene);
             return DescribeGameObject(root);
         }
@@ -638,7 +638,7 @@ namespace Alday.UnityAiConnector.Editor
             canvas.GetComponent<CanvasScaler>().uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             canvas.GetComponent<CanvasScaler>().referenceResolution = new Vector2(800, 450);
             UnityAiEditorControlTools.EnsureEventSystem();
-            Undo.RegisterCreatedObjectUndo(canvas, "Create Canvas via Unity AI Connector");
+            Undo.RegisterCreatedObjectUndo(canvas, "Create Canvas via Unity AI Game Maker");
             EditorSceneManager.MarkSceneDirty(canvas.scene);
             return canvas;
         }
@@ -646,7 +646,7 @@ namespace Alday.UnityAiConnector.Editor
         static GameObject CreateUiButton(Transform parent, string name, string textValue, JObject args)
         {
             var go = UnityAiGameStyle.CreateStyledButton(parent, name, textValue, args);
-            Undo.RegisterCreatedObjectUndo(go, "Create Virtual Button via Unity AI Connector");
+            Undo.RegisterCreatedObjectUndo(go, "Create Virtual Button via Unity AI Game Maker");
             EditorSceneManager.MarkSceneDirty(go.scene);
             return go;
         }
@@ -710,7 +710,7 @@ namespace Alday.UnityAiConnector.Editor
             knob.GetComponent<Shadow>().effectColor = style.shadow;
             knob.GetComponent<Shadow>().effectDistance = new Vector2(0, -3);
 
-            Undo.RegisterCreatedObjectUndo(root, "Create Joystick via Unity AI Connector");
+            Undo.RegisterCreatedObjectUndo(root, "Create Joystick via Unity AI Game Maker");
             EditorSceneManager.MarkSceneDirty(root.scene);
             return root;
         }

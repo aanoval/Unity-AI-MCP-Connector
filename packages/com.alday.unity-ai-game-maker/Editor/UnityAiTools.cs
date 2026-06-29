@@ -8,7 +8,7 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-namespace Alday.UnityAiConnector.Editor
+namespace Alday.UnityAiGameMaker.Editor
 {
     public static class UnityAiTools
     {
@@ -69,7 +69,7 @@ namespace Alday.UnityAiConnector.Editor
             "sample.runner3D.createContent"
         };
 
-        public static object Invoke(string tool, JObject args, UnityAiConnectorConfig config)
+        public static object Invoke(string tool, JObject args, UnityAiGameMakerConfig config)
         {
             if (string.IsNullOrWhiteSpace(tool))
                 throw new ArgumentException("Tool is required.");
@@ -202,7 +202,7 @@ namespace Alday.UnityAiConnector.Editor
                 go.transform.SetParent(parent.transform, false);
             }
 
-            Undo.RegisterCreatedObjectUndo(go, "Create GameObject via Unity AI Connector");
+            Undo.RegisterCreatedObjectUndo(go, "Create GameObject via Unity AI Game Maker");
             EditorSceneManager.MarkSceneDirty(go.scene);
             return new { go.name, path = GetPath(go), id = GetObjectId(go) };
         }
@@ -211,7 +211,7 @@ namespace Alday.UnityAiConnector.Editor
         {
             var target = ResolveTarget(args);
             var transform = target.transform;
-            Undo.RecordObject(transform, "Set Transform via Unity AI Connector");
+            Undo.RecordObject(transform, "Set Transform via Unity AI Game Maker");
 
             ApplyVector(args["position"], value => transform.localPosition = value);
             ApplyVector(args["rotation"], value => transform.localEulerAngles = value);

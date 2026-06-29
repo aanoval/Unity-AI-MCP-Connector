@@ -1,6 +1,6 @@
 # Security Model
 
-Unity AI MCP Connector is designed as a local editor automation bridge. It should never be treated as a public network service.
+Unity AI MCP Game Maker is designed as a local editor automation bridge. It should never be treated as a public network service.
 
 ## Defaults
 
@@ -15,7 +15,7 @@ Unity AI MCP Connector is designed as a local editor automation bridge. It shoul
 
 ## Threat Model
 
-The main risk is not the connector itself doing something malicious. The main risk is another local process sending commands to Unity through the connector.
+The main risk is not Unity AI MCP Game Maker itself doing something malicious. The main risk is another local process sending commands to Unity through the local server.
 
 That is why RPC calls require a bearer token and the server binds only to loopback.
 
@@ -38,14 +38,14 @@ The first public versions should favor safe, structured editor operations over o
 The token is stored in the Unity project under:
 
 ```text
-UserSettings/UnityAiConnector.json
+UserSettings/UnityAiGameMaker.json
 ```
 
 Do not commit `UserSettings/` to source control.
 
 ## Public Network Warning
 
-Do not expose this connector with:
+Do not expose this local server with:
 
 ```text
 0.0.0.0

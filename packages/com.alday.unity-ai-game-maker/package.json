@@ -1,9 +1,9 @@
 {
-  "name": "com.alday.unity-ai-connector",
-  "displayName": "Unity AI Connector",
+  "name": "com.alday.unity-ai-game-maker",
+  "displayName": "Unity AI MCP Game Maker",
   "version": "0.2.0",
   "unity": "2022.3",
-  "description": "Secure local AI connector for Unity Editor automation.",
+  "description": "Secure local AI game-making tools for Unity Editor automation.",
   "author": {
     "name": "Alday Global"
   },
@@ -12,8 +12,11 @@
     "unity",
     "ai",
     "mcp",
+    "game-maker",
     "editor",
-    "automation"
+    "automation",
+    "codex",
+    "claude"
   ],
   "dependencies": {
     "com.unity.nuget.newtonsoft-json": "3.2.1",

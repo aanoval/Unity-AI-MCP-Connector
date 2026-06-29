@@ -5,10 +5,10 @@ using System.Security.Cryptography;
 using Newtonsoft.Json;
 using UnityEngine;
 
-namespace Alday.UnityAiConnector.Editor
+namespace Alday.UnityAiGameMaker.Editor
 {
     [Serializable]
-    public sealed class UnityAiConnectorConfig
+    public sealed class UnityAiGameMakerConfig
     {
         public string bindHost = "127.0.0.1";
         public int port = 6421;
@@ -18,18 +18,18 @@ namespace Alday.UnityAiConnector.Editor
         public string token = "";
 
         public static string ProjectRoot => Path.GetDirectoryName(Application.dataPath) ?? Directory.GetCurrentDirectory();
-        public static string ConfigPath => Path.Combine(ProjectRoot, "UserSettings", "UnityAiConnector.json");
+        public static string ConfigPath => Path.Combine(ProjectRoot, "UserSettings", "UnityAiGameMaker.json");
 
-        public static UnityAiConnectorConfig LoadOrCreate()
+        public static UnityAiGameMakerConfig LoadOrCreate()
         {
-            UnityAiConnectorConfig config = null;
+            UnityAiGameMakerConfig config = null;
 
             if (File.Exists(ConfigPath))
             {
-                config = JsonConvert.DeserializeObject<UnityAiConnectorConfig>(File.ReadAllText(ConfigPath));
+                config = JsonConvert.DeserializeObject<UnityAiGameMakerConfig>(File.ReadAllText(ConfigPath));
             }
 
-            config ??= new UnityAiConnectorConfig();
+            config ??= new UnityAiGameMakerConfig();
 
             if (string.IsNullOrWhiteSpace(config.bindHost))
                 config.bindHost = "127.0.0.1";

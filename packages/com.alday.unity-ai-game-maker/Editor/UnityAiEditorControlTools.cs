@@ -11,7 +11,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 
-namespace Alday.UnityAiConnector.Editor
+namespace Alday.UnityAiGameMaker.Editor
 {
     public static class UnityAiEditorControlTools
     {
@@ -110,7 +110,7 @@ namespace Alday.UnityAiConnector.Editor
         {
             var target = UnityAiTools.ResolveTarget(args);
             var active = args.Value<bool?>("active") ?? true;
-            Undo.RecordObject(target, "Set Active via Unity AI Connector");
+            Undo.RecordObject(target, "Set Active via Unity AI Game Maker");
             target.SetActive(active);
             EditorSceneManager.MarkSceneDirty(target.scene);
             return DescribeGameObject(target);
@@ -126,7 +126,7 @@ namespace Alday.UnityAiConnector.Editor
             if (!string.IsNullOrWhiteSpace(parentPath) && parent == null)
                 throw new InvalidOperationException("Parent not found: " + parentPath);
 
-            Undo.SetTransformParent(target.transform, parent == null ? null : parent.transform, "Set Parent via Unity AI Connector");
+            Undo.SetTransformParent(target.transform, parent == null ? null : parent.transform, "Set Parent via Unity AI Game Maker");
             target.transform.SetParent(parent == null ? null : parent.transform, worldPositionStays);
             EditorSceneManager.MarkSceneDirty(target.scene);
             return DescribeGameObject(target);
@@ -160,7 +160,7 @@ namespace Alday.UnityAiConnector.Editor
             if (field == null)
                 throw new InvalidOperationException("Public field not found: " + typeName + "." + fieldName);
 
-            Undo.RecordObject(component, "Set Component Field via Unity AI Connector");
+            Undo.RecordObject(component, "Set Component Field via Unity AI Game Maker");
             field.SetValue(component, ConvertToken(args["value"], field.FieldType));
             EditorUtility.SetDirty(component);
             EditorSceneManager.MarkSceneDirty(target.scene);
@@ -193,7 +193,7 @@ namespace Alday.UnityAiConnector.Editor
 
             ApplyTransform(go, args);
             ApplyCamera(go.GetComponent<Camera>(), args);
-            Undo.RegisterCreatedObjectUndo(go, "Create Camera via Unity AI Connector");
+            Undo.RegisterCreatedObjectUndo(go, "Create Camera via Unity AI Game Maker");
             EditorSceneManager.MarkSceneDirty(go.scene);
             return DescribeGameObject(go);
         }
@@ -205,7 +205,7 @@ namespace Alday.UnityAiConnector.Editor
             if (camera == null)
                 throw new InvalidOperationException("Target does not have a Camera component.");
 
-            Undo.RecordObject(camera, "Set Camera via Unity AI Connector");
+            Undo.RecordObject(camera, "Set Camera via Unity AI Game Maker");
             ApplyCamera(camera, args);
             EditorUtility.SetDirty(camera);
             EditorSceneManager.MarkSceneDirty(target.scene);
@@ -231,7 +231,7 @@ namespace Alday.UnityAiConnector.Editor
             instance.name = args.Value<string>("name") ?? prefab.name;
             ApplyParent(instance, args);
             ApplyTransform(instance, args);
-            Undo.RegisterCreatedObjectUndo(instance, "Instantiate Prefab via Unity AI Connector");
+            Undo.RegisterCreatedObjectUndo(instance, "Instantiate Prefab via Unity AI Game Maker");
             EditorSceneManager.MarkSceneDirty(instance.scene);
             return DescribeGameObject(instance);
         }
@@ -257,7 +257,7 @@ namespace Alday.UnityAiConnector.Editor
             scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
             scaler.referenceResolution = ReadVector2(args["referenceResolution"], new Vector2(800, 450));
             EnsureEventSystem();
-            Undo.RegisterCreatedObjectUndo(go, "Create Canvas via Unity AI Connector");
+            Undo.RegisterCreatedObjectUndo(go, "Create Canvas via Unity AI Game Maker");
             EditorSceneManager.MarkSceneDirty(go.scene);
             return DescribeGameObject(go);
         }
@@ -275,7 +275,7 @@ namespace Alday.UnityAiConnector.Editor
                 args.Value<string>("text") ?? "Text",
                 args,
                 args.Value<string>("role") ?? "body");
-            Undo.RegisterCreatedObjectUndo(go, "Create Text via Unity AI Connector");
+            Undo.RegisterCreatedObjectUndo(go, "Create Text via Unity AI Game Maker");
             EditorSceneManager.MarkSceneDirty(go.scene);
             return DescribeGameObject(go);
         }
@@ -292,7 +292,7 @@ namespace Alday.UnityAiConnector.Editor
                 args.Value<string>("name") ?? "Button",
                 args.Value<string>("text") ?? "Button",
                 args);
-            Undo.RegisterCreatedObjectUndo(go, "Create Button via Unity AI Connector");
+            Undo.RegisterCreatedObjectUndo(go, "Create Button via Unity AI Game Maker");
             EditorSceneManager.MarkSceneDirty(go.scene);
             return DescribeGameObject(go);
         }
@@ -304,7 +304,7 @@ namespace Alday.UnityAiConnector.Editor
             if (rect == null)
                 throw new InvalidOperationException("Target does not have RectTransform.");
 
-            Undo.RecordObject(rect, "Set RectTransform via Unity AI Connector");
+            Undo.RecordObject(rect, "Set RectTransform via Unity AI Game Maker");
             ApplyRectTransform(rect, args);
             EditorUtility.SetDirty(rect);
             EditorSceneManager.MarkSceneDirty(target.scene);
