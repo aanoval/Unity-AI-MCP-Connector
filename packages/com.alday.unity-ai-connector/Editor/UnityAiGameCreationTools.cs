@@ -182,10 +182,22 @@ namespace Alday.UnityAiConnector.Editor
             Directory.CreateDirectory(Path.GetDirectoryName(absolutePath) ?? ".");
             var previousTarget = camera.targetTexture;
             var previousActive = RenderTexture.active;
+            var overlayCanvases = UnityAiTools.AllSceneObjects()
+                .Select(go => go.GetComponent<Canvas>())
+                .Where(canvas => canvas != null && canvas.renderMode == RenderMode.ScreenSpaceOverlay)
+                .ToArray();
+            var previousCanvasCameras = overlayCanvases.Select(canvas => canvas.worldCamera).ToArray();
+            var previousCanvasDistances = overlayCanvases.Select(canvas => canvas.planeDistance).ToArray();
             var renderTexture = new RenderTexture(width, height, 24);
             var texture = new Texture2D(width, height, TextureFormat.RGB24, false);
             try
             {
+                for (var i = 0; i < overlayCanvases.Length; i++)
+                {
+                    overlayCanvases[i].renderMode = RenderMode.ScreenSpaceCamera;
+                    overlayCanvases[i].worldCamera = camera;
+                    overlayCanvases[i].planeDistance = 1f + i * 0.02f;
+                }
                 camera.targetTexture = renderTexture;
                 RenderTexture.active = renderTexture;
                 camera.Render();
@@ -195,6 +207,14 @@ namespace Alday.UnityAiConnector.Editor
             }
             finally
             {
+                for (var i = 0; i < overlayCanvases.Length; i++)
+                {
+                    if (overlayCanvases[i] == null)
+                        continue;
+                    overlayCanvases[i].renderMode = RenderMode.ScreenSpaceOverlay;
+                    overlayCanvases[i].worldCamera = previousCanvasCameras[i];
+                    overlayCanvases[i].planeDistance = previousCanvasDistances[i];
+                }
                 camera.targetTexture = previousTarget;
                 RenderTexture.active = previousActive;
                 UnityEngine.Object.DestroyImmediate(texture);
@@ -277,7 +297,8 @@ namespace Alday.UnityAiConnector.Editor
             var joystick = CreateJoystickObject(canvas.transform, new JObject
             {
                 ["name"] = args.Value<string>("joystickName") ?? "Move Joystick",
-                ["anchoredPosition"] = new JArray(120, 110)
+                ["anchoredPosition"] = new JArray(120, 110),
+                ["style"] = args.Value<string>("style") ?? args.Value<string>("preset") ?? "arcade"
             });
 
             var jump = CreateUiButton(canvas.transform, args.Value<string>("jumpName") ?? "Jump Button", args.Value<string>("jumpText") ?? "JUMP", new JObject
@@ -286,7 +307,9 @@ namespace Alday.UnityAiConnector.Editor
                 ["sizeDelta"] = new JArray(132, 62),
                 ["anchorMin"] = new JArray(1, 0),
                 ["anchorMax"] = new JArray(1, 0),
-                ["pivot"] = new JArray(0.5f, 0.5f)
+                ["pivot"] = new JArray(0.5f, 0.5f),
+                ["style"] = args.Value<string>("style") ?? args.Value<string>("preset") ?? "arcade",
+                ["variant"] = "primary"
             });
             var action = CreateUiButton(canvas.transform, args.Value<string>("actionName") ?? "Action Button", args.Value<string>("actionText") ?? "ACTION", new JObject
             {
@@ -294,10 +317,146 @@ namespace Alday.UnityAiConnector.Editor
                 ["sizeDelta"] = new JArray(146, 62),
                 ["anchorMin"] = new JArray(1, 0),
                 ["anchorMax"] = new JArray(1, 0),
-                ["pivot"] = new JArray(0.5f, 0.5f)
+                ["pivot"] = new JArray(0.5f, 0.5f),
+                ["style"] = args.Value<string>("style") ?? args.Value<string>("preset") ?? "arcade",
+                ["variant"] = "secondary"
             });
 
             return new { canvas = UnityAiTools.GetPath(canvas), joystick = UnityAiTools.GetPath(joystick), jump = UnityAiTools.GetPath(jump), action = UnityAiTools.GetPath(action) };
+        }
+
+        public static object CreateMenu(JObject args)
+        {
+            var canvas = EnsureCanvas(args.Value<string>("parentPath"));
+            var style = UnityAiGameStyle.FromArgs(args);
+            var root = new GameObject(args.Value<string>("name") ?? "Main Menu UI", typeof(RectTransform));
+            root.transform.SetParent(canvas.transform, false);
+            Stretch(root.GetComponent<RectTransform>());
+
+            var panel = new GameObject("Menu Stack", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Shadow));
+            panel.transform.SetParent(root.transform, false);
+            var panelRect = panel.GetComponent<RectTransform>();
+            panelRect.anchorMin = new Vector2(0.5f, 0.5f);
+            panelRect.anchorMax = new Vector2(0.5f, 0.5f);
+            panelRect.pivot = new Vector2(0.5f, 0.5f);
+            panelRect.anchoredPosition = UnityAiEditorControlTools.ReadVector2(args["anchoredPosition"], new Vector2(0, 12));
+            panelRect.sizeDelta = UnityAiEditorControlTools.ReadVector2(args["sizeDelta"], new Vector2(520, 390));
+            var panelImage = panel.GetComponent<Image>();
+            panelImage.sprite = UnityAiGameStyle.EnsureRoundedSprite();
+            panelImage.type = Image.Type.Sliced;
+            panelImage.color = style.panel;
+            panel.GetComponent<Shadow>().effectColor = style.shadow;
+            panel.GetComponent<Shadow>().effectDistance = new Vector2(0, -8);
+
+            UnityAiGameStyle.CreateStyledText(panel.transform, "Title", args.Value<string>("title") ?? "GAME TITLE", new JObject
+            {
+                ["role"] = "title",
+                ["style"] = style.name,
+                ["anchoredPosition"] = new JArray(0, 112),
+                ["sizeDelta"] = new JArray(460, 72),
+                ["fontSize"] = args.Value<int?>("titleSize") ?? style.titleSize
+            }, "title");
+
+            UnityAiGameStyle.CreateStyledText(panel.transform, "Subtitle", args.Value<string>("subtitle") ?? "Ready to play", new JObject
+            {
+                ["role"] = "body",
+                ["style"] = style.name,
+                ["anchoredPosition"] = new JArray(0, 62),
+                ["sizeDelta"] = new JArray(430, 38),
+                ["fontSize"] = args.Value<int?>("subtitleSize") ?? style.bodySize,
+                ["color"] = new JArray(style.mutedText.r, style.mutedText.g, style.mutedText.b, style.mutedText.a)
+            }, "body");
+
+            var buttons = args["buttons"] as JArray;
+            if (buttons == null || buttons.Count == 0)
+                buttons = new JArray("PLAY", "SETTINGS");
+
+            for (var i = 0; i < buttons.Count; i++)
+            {
+                var label = buttons[i].Type == JTokenType.String ? buttons[i].Value<string>() : buttons[i].Value<string>("text") ?? "BUTTON";
+                var variant = i == 0 ? "primary" : "secondary";
+                if (buttons[i] is JObject buttonObject)
+                    variant = buttonObject.Value<string>("variant") ?? variant;
+                CreateUiButton(panel.transform, label + " Button", label, new JObject
+                {
+                    ["style"] = style.name,
+                    ["variant"] = variant,
+                    ["anchoredPosition"] = new JArray(0, 6 - i * 74),
+                    ["sizeDelta"] = new JArray(270, 64)
+                });
+            }
+
+            Undo.RegisterCreatedObjectUndo(root, "Create Menu via Unity AI Connector");
+            EditorSceneManager.MarkSceneDirty(root.scene);
+            return DescribeGameObject(root);
+        }
+
+        public static object CreateHud(JObject args)
+        {
+            var canvas = EnsureCanvas(args.Value<string>("parentPath"));
+            var style = UnityAiGameStyle.FromArgs(args);
+            var root = new GameObject(args.Value<string>("name") ?? "Gameplay HUD", typeof(RectTransform));
+            root.transform.SetParent(canvas.transform, false);
+            Stretch(root.GetComponent<RectTransform>());
+
+            CreateHudText(root.transform, "Score Text", args.Value<string>("scoreText") ?? "SCORE 000", new Vector2(24, -24), new Vector2(0, 1), style, TextAnchor.UpperLeft);
+            CreateHudText(root.transform, "Coins Text", args.Value<string>("coinsText") ?? "COINS 0", new Vector2(24, -62), new Vector2(0, 1), style, TextAnchor.UpperLeft);
+            CreateUiButton(root.transform, "Pause Button", args.Value<string>("pauseText") ?? "II", new JObject
+            {
+                ["style"] = style.name,
+                ["variant"] = "secondary",
+                ["anchorMin"] = new JArray(1, 1),
+                ["anchorMax"] = new JArray(1, 1),
+                ["pivot"] = new JArray(1, 1),
+                ["anchoredPosition"] = new JArray(-24, -24),
+                ["sizeDelta"] = new JArray(64, 54),
+                ["fontSize"] = 22
+            });
+
+            Undo.RegisterCreatedObjectUndo(root, "Create HUD via Unity AI Connector");
+            EditorSceneManager.MarkSceneDirty(root.scene);
+            return DescribeGameObject(root);
+        }
+
+        public static object ValidateUi(JObject args)
+        {
+            var issues = new List<object>();
+            var minButtonHeight = args.Value<float?>("minButtonHeight") ?? 44f;
+            var minButtonWidth = args.Value<float?>("minButtonWidth") ?? 44f;
+
+            foreach (var canvas in UnityAiTools.AllSceneObjects().Select(go => go.GetComponent<Canvas>()).Where(canvas => canvas != null))
+            {
+                if (canvas.GetComponent<GraphicRaycaster>() == null)
+                    issues.Add(new { severity = "warning", path = UnityAiTools.GetPath(canvas.gameObject), message = "Canvas has no GraphicRaycaster." });
+            }
+
+            foreach (var button in UnityAiTools.AllSceneObjects().Select(go => go.GetComponent<Button>()).Where(button => button != null))
+            {
+                var rect = button.GetComponent<RectTransform>();
+                if (rect == null)
+                    continue;
+                if (rect.sizeDelta.x < minButtonWidth || rect.sizeDelta.y < minButtonHeight)
+                    issues.Add(new { severity = "error", path = UnityAiTools.GetPath(button.gameObject), message = "Button is smaller than mobile-friendly minimum size.", size = UnityAiEditorControlTools.Vector2ToArray(rect.sizeDelta) });
+                if (button.GetComponent<Image>() == null)
+                    issues.Add(new { severity = "warning", path = UnityAiTools.GetPath(button.gameObject), message = "Button has no Image background." });
+                if (button.GetComponentInChildren<Text>() == null)
+                    issues.Add(new { severity = "warning", path = UnityAiTools.GetPath(button.gameObject), message = "Button has no text label." });
+            }
+
+            foreach (var text in UnityAiTools.AllSceneObjects().Select(go => go.GetComponent<Text>()).Where(text => text != null))
+            {
+                var rect = text.GetComponent<RectTransform>();
+                if (rect == null)
+                    continue;
+                if (text.fontSize < 12)
+                    issues.Add(new { severity = "warning", path = UnityAiTools.GetPath(text.gameObject), message = "Text font size is too small.", text.fontSize });
+                if (rect.sizeDelta.x > 0 && rect.sizeDelta.y > 0 && !text.resizeTextForBestFit && text.text.Length > 24)
+                    issues.Add(new { severity = "warning", path = UnityAiTools.GetPath(text.gameObject), message = "Long text should use best fit or larger bounds." });
+                if (text.GetComponent<Shadow>() == null && text.GetComponent<Outline>() == null)
+                    issues.Add(new { severity = "info", path = UnityAiTools.GetPath(text.gameObject), message = "Text has no shadow or outline for readability." });
+            }
+
+            return new { ok = issues.Count == 0, issueCount = issues.Count, issues };
         }
 
         public static object CreatePrefabChild(JObject args)
@@ -486,55 +645,70 @@ namespace Alday.UnityAiConnector.Editor
 
         static GameObject CreateUiButton(Transform parent, string name, string textValue, JObject args)
         {
-            var go = new GameObject(name, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
-            go.transform.SetParent(parent, false);
-            var rect = go.GetComponent<RectTransform>();
-            rect.sizeDelta = UnityAiEditorControlTools.ReadVector2(args["sizeDelta"], new Vector2(148, 58));
-            rect.anchoredPosition = UnityAiEditorControlTools.ReadVector2(args["anchoredPosition"], Vector2.zero);
-            rect.anchorMin = UnityAiEditorControlTools.ReadVector2(args["anchorMin"], new Vector2(0.5f, 0.5f));
-            rect.anchorMax = UnityAiEditorControlTools.ReadVector2(args["anchorMax"], new Vector2(0.5f, 0.5f));
-            rect.pivot = UnityAiEditorControlTools.ReadVector2(args["pivot"], new Vector2(0.5f, 0.5f));
-            go.GetComponent<Image>().color = new Color(0.12f, 0.32f, 0.78f, 0.82f);
-            UnityAiEditorControlTools.ApplyColor(args["backgroundColor"], value => go.GetComponent<Image>().color = value);
-
-            var label = new GameObject("Label", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
-            label.transform.SetParent(go.transform, false);
-            var labelRect = label.GetComponent<RectTransform>();
-            labelRect.anchorMin = Vector2.zero;
-            labelRect.anchorMax = Vector2.one;
-            labelRect.offsetMin = Vector2.zero;
-            labelRect.offsetMax = Vector2.zero;
-            var text = label.GetComponent<Text>();
-            text.text = textValue;
-            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            text.fontSize = args.Value<int?>("fontSize") ?? 20;
-            text.alignment = TextAnchor.MiddleCenter;
-            text.color = Color.white;
-            UnityAiEditorControlTools.ApplyColor(args["textColor"], value => text.color = value);
-
+            var go = UnityAiGameStyle.CreateStyledButton(parent, name, textValue, args);
             Undo.RegisterCreatedObjectUndo(go, "Create Virtual Button via Unity AI Connector");
             EditorSceneManager.MarkSceneDirty(go.scene);
             return go;
         }
 
+        static void CreateHudText(Transform parent, string name, string value, Vector2 position, Vector2 anchor, UnityAiGameStylePreset style, TextAnchor alignment)
+        {
+            UnityAiGameStyle.CreateStyledText(parent, name, value, new JObject
+            {
+                ["style"] = style.name,
+                ["role"] = "body",
+                ["anchorMin"] = new JArray(anchor.x, anchor.y),
+                ["anchorMax"] = new JArray(anchor.x, anchor.y),
+                ["pivot"] = new JArray(anchor.x, anchor.y),
+                ["anchoredPosition"] = new JArray(position.x, position.y),
+                ["sizeDelta"] = new JArray(260, 34),
+                ["alignment"] = alignment.ToString(),
+                ["fontSize"] = style.bodySize
+            }, "body");
+        }
+
+        static void Stretch(RectTransform rect)
+        {
+            rect.anchorMin = Vector2.zero;
+            rect.anchorMax = Vector2.one;
+            rect.offsetMin = Vector2.zero;
+            rect.offsetMax = Vector2.zero;
+            rect.pivot = new Vector2(0.5f, 0.5f);
+        }
+
         static GameObject CreateJoystickObject(Transform parent, JObject args)
         {
-            var root = new GameObject(args.Value<string>("name") ?? "Virtual Joystick", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            var style = UnityAiGameStyle.FromArgs(args);
+            var root = new GameObject(args.Value<string>("name") ?? "Virtual Joystick", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Outline), typeof(Shadow));
             root.transform.SetParent(parent, false);
             var rect = root.GetComponent<RectTransform>();
-            rect.sizeDelta = UnityAiEditorControlTools.ReadVector2(args["sizeDelta"], new Vector2(140, 140));
+            rect.sizeDelta = UnityAiEditorControlTools.ReadVector2(args["sizeDelta"], new Vector2(152, 152));
             rect.anchoredPosition = UnityAiEditorControlTools.ReadVector2(args["anchoredPosition"], new Vector2(120, 110));
             rect.anchorMin = UnityAiEditorControlTools.ReadVector2(args["anchorMin"], new Vector2(0, 0));
             rect.anchorMax = UnityAiEditorControlTools.ReadVector2(args["anchorMax"], new Vector2(0, 0));
             rect.pivot = UnityAiEditorControlTools.ReadVector2(args["pivot"], new Vector2(0.5f, 0.5f));
-            root.GetComponent<Image>().color = new Color(1, 1, 1, 0.16f);
+            var background = root.GetComponent<Image>();
+            background.sprite = UnityAiGameStyle.EnsureRoundedSprite();
+            background.type = Image.Type.Sliced;
+            background.color = new Color(style.secondary.r, style.secondary.g, style.secondary.b, 0.42f);
+            root.GetComponent<Outline>().effectColor = new Color(style.text.r, style.text.g, style.text.b, 0.28f);
+            root.GetComponent<Outline>().effectDistance = new Vector2(2, -2);
+            root.GetComponent<Shadow>().effectColor = style.shadow;
+            root.GetComponent<Shadow>().effectDistance = new Vector2(0, -4);
 
-            var knob = new GameObject("Knob", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+            var knob = new GameObject("Knob", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Outline), typeof(Shadow));
             knob.transform.SetParent(root.transform, false);
             var knobRect = knob.GetComponent<RectTransform>();
-            knobRect.sizeDelta = new Vector2(58, 58);
+            knobRect.sizeDelta = new Vector2(62, 62);
             knobRect.anchorMin = knobRect.anchorMax = knobRect.pivot = new Vector2(0.5f, 0.5f);
-            knob.GetComponent<Image>().color = new Color(1, 1, 1, 0.38f);
+            var knobImage = knob.GetComponent<Image>();
+            knobImage.sprite = UnityAiGameStyle.EnsureRoundedSprite();
+            knobImage.type = Image.Type.Sliced;
+            knobImage.color = new Color(style.primary.r, style.primary.g, style.primary.b, 0.78f);
+            knob.GetComponent<Outline>().effectColor = new Color(1, 1, 1, 0.52f);
+            knob.GetComponent<Outline>().effectDistance = new Vector2(1.5f, -1.5f);
+            knob.GetComponent<Shadow>().effectColor = style.shadow;
+            knob.GetComponent<Shadow>().effectDistance = new Vector2(0, -3);
 
             Undo.RegisterCreatedObjectUndo(root, "Create Joystick via Unity AI Connector");
             EditorSceneManager.MarkSceneDirty(root.scene);

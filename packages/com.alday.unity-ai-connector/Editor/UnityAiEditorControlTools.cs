@@ -269,15 +269,12 @@ namespace Alday.UnityAiConnector.Editor
             if (parent == null)
                 throw new InvalidOperationException("Parent not found: " + parentPath);
 
-            var go = new GameObject(args.Value<string>("name") ?? "Text", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
-            go.transform.SetParent(parent.transform, false);
-            var text = go.GetComponent<Text>();
-            text.text = args.Value<string>("text") ?? "Text";
-            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            text.fontSize = args.Value<int?>("fontSize") ?? 24;
-            text.alignment = ParseTextAnchor(args.Value<string>("alignment"), TextAnchor.MiddleCenter);
-            ApplyColor(args["color"], color => text.color = color);
-            ApplyRectTransform(go.GetComponent<RectTransform>(), args);
+            var go = UnityAiGameStyle.CreateStyledText(
+                parent.transform,
+                args.Value<string>("name") ?? "Text",
+                args.Value<string>("text") ?? "Text",
+                args,
+                args.Value<string>("role") ?? "body");
             Undo.RegisterCreatedObjectUndo(go, "Create Text via Unity AI Connector");
             EditorSceneManager.MarkSceneDirty(go.scene);
             return DescribeGameObject(go);
@@ -290,25 +287,11 @@ namespace Alday.UnityAiConnector.Editor
             if (parent == null)
                 throw new InvalidOperationException("Parent not found: " + parentPath);
 
-            var go = new GameObject(args.Value<string>("name") ?? "Button", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Button));
-            go.transform.SetParent(parent.transform, false);
-            ApplyColor(args["backgroundColor"], color => go.GetComponent<Image>().color = color);
-            ApplyRectTransform(go.GetComponent<RectTransform>(), args);
-
-            var label = new GameObject("Label", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
-            label.transform.SetParent(go.transform, false);
-            var labelRect = label.GetComponent<RectTransform>();
-            labelRect.anchorMin = Vector2.zero;
-            labelRect.anchorMax = Vector2.one;
-            labelRect.offsetMin = Vector2.zero;
-            labelRect.offsetMax = Vector2.zero;
-            var text = label.GetComponent<Text>();
-            text.text = args.Value<string>("text") ?? "Button";
-            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-            text.fontSize = args.Value<int?>("fontSize") ?? 24;
-            text.alignment = TextAnchor.MiddleCenter;
-            ApplyColor(args["textColor"], color => text.color = color);
-
+            var go = UnityAiGameStyle.CreateStyledButton(
+                parent.transform,
+                args.Value<string>("name") ?? "Button",
+                args.Value<string>("text") ?? "Button",
+                args);
             Undo.RegisterCreatedObjectUndo(go, "Create Button via Unity AI Connector");
             EditorSceneManager.MarkSceneDirty(go.scene);
             return DescribeGameObject(go);

@@ -151,6 +151,9 @@ The starter Unity package includes:
 - `ui.canvas.create`
 - `ui.text.create`
 - `ui.button.create`
+- `ui.menu.create`
+- `ui.hud.create`
+- `ui.validate`
 - `ui.virtualButton.create`
 - `ui.joystick.create`
 - `ui.mobileControls.create`
@@ -172,8 +175,25 @@ The protocol is intentionally boring JSON:
 Create and position a UI button:
 
 ```bash
-node cli/unity-ai.js /path/to/UnityProject call ui.button.create '{"parentPath":"Canvas","name":"Play Button","text":"PLAY","anchoredPosition":[0,-40],"sizeDelta":[220,64]}'
+node cli/unity-ai.js /path/to/UnityProject call ui.button.create '{"parentPath":"Canvas","name":"Play Button","text":"PLAY","style":"soccer_mobile","variant":"primary","anchoredPosition":[0,-40]}'
 ```
+
+UI tools have production-grade defaults. Buttons and text use game style presets, generated rounded sliced sprites, shadows, outlines, best-fit text, mobile-friendly button sizes, and readable color contrast. Available presets include `arcade`, `casual`, `dark`, `premium`, and `soccer_mobile`.
+
+Create a polished menu or HUD:
+
+```bash
+node cli/unity-ai.js /path/to/UnityProject call ui.menu.create '{"parentPath":"Main Menu Canvas","style":"soccer_mobile","title":"SOCCER RUSH","subtitle":"Win the match","buttons":["PLAY","SHOP","SETTINGS"]}'
+node cli/unity-ai.js /path/to/UnityProject call ui.hud.create '{"parentPath":"Gameplay Canvas","style":"soccer_mobile","scoreText":"LEVEL 1","coinsText":"COINS 0"}'
+node cli/unity-ai.js /path/to/UnityProject call ui.validate '{"minButtonHeight":44}'
+```
+
+Recommended UI workflow for agents:
+
+1. Create UI with a style preset.
+2. Run `ui.validate`.
+3. Capture a screenshot with `screenshot.capture`.
+4. Adjust layout if validation or screenshot review shows overlap, weak contrast, or poor proportions.
 
 Open a scene before editing it:
 
