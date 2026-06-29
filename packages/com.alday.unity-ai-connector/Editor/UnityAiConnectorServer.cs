@@ -49,8 +49,16 @@ namespace Alday.UnityAiConnector.Editor
             Debug.Log($"Unity AI Connector config: {UnityAiConnectorConfig.ConfigPath}");
         }
 
+        [MenuItem("Tools/Unity AI Connector/Open Config")]
+        public static void OpenConfig()
+        {
+            config = UnityAiConnectorConfig.LoadOrCreate();
+            EditorUtility.RevealInFinder(UnityAiConnectorConfig.ConfigPath);
+        }
+
         public static void Start()
         {
+            config = UnityAiConnectorConfig.LoadOrCreate();
             if (isRunning)
             {
                 Debug.Log("Unity AI Connector server is already running.");
@@ -128,7 +136,9 @@ namespace Alday.UnityAiConnector.Editor
                     {
                         ok = true,
                         name = "Unity AI Connector",
-                        version = "0.1.0",
+                        version = "0.2.0",
+                        bindHost = config.bindHost,
+                        port = config.port,
                         authRequired = config.authRequired
                     });
                     return;
@@ -142,7 +152,12 @@ namespace Alday.UnityAiConnector.Editor
 
                 if (context.Request.HttpMethod == "GET" && path == "/tools")
                 {
-                    WriteJson(context, 200, new { ok = true, tools = UnityAiTools.ToolNames });
+                    WriteJson(context, 200, new
+                    {
+                        ok = true,
+                        count = UnityAiTools.ToolNames.Length,
+                        tools = UnityAiTools.ToolNames
+                    });
                     return;
                 }
 
@@ -170,6 +185,9 @@ namespace Alday.UnityAiConnector.Editor
         {
             if (!config.authRequired)
                 return true;
+
+            if (string.IsNullOrWhiteSpace(config.token))
+                return false;
 
             var header = context.Request.Headers["Authorization"];
             return header == $"Bearer {config.token}";

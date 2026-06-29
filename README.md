@@ -4,7 +4,7 @@ Secure local AI control for the Unity Editor.
 
 Unity AI MCP Connector is a lightweight Unity Editor bridge designed for AI coding agents that need to inspect and edit Unity projects without turning the editor into an unsafe remote shell.
 
-The goal is simple: keep the speed and ergonomics of `unity-cli`, expand toward full asset and scene coverage, and keep dangerous capabilities locked behind explicit project policy.
+The goal is simple: keep the workflow fast, expand toward full asset and scene coverage, and keep dangerous capabilities locked behind explicit project policy.
 
 ## Why This Exists
 
@@ -38,17 +38,11 @@ See [docs/SECURITY.md](docs/SECURITY.md) for the complete security model.
 
 This repository is an early foundation. It already includes:
 
-- Unity Editor package scaffold
+- installable Unity Editor package
 - local token-protected HTTP RPC server
 - starter tools for scene, GameObject, component, asset, and transform operations
-- dependency-free Node CLI prototype
+- dependency-free Node CLI
 - architecture, roadmap, and security docs
-- reference submodules for related projects
-
-Reference projects:
-
-- [akiojin/unity-cli](https://github.com/akiojin/unity-cli)
-- [IvanMurzak/Unity-MCP](https://github.com/IvanMurzak/Unity-MCP)
 
 ## Repository Layout
 
@@ -59,20 +53,15 @@ Reference projects:
 |-- examples/                             # Example policy and requests
 |-- packages/
 |   `-- com.alday.unity-ai-connector/     # Unity Editor package
-|-- references/                           # Git submodules used for research
 `-- server/                               # MCP adapter notes and future server layer
 ```
 
 ## Quick Start
 
-Add the package to a Unity project's `Packages/manifest.json`:
+Install the package into a Unity project:
 
-```json
-{
-  "dependencies": {
-    "com.alday.unity-ai-connector": "file:/absolute/path/to/Unity-AI-MCP-Connector/packages/com.alday.unity-ai-connector"
-  }
-}
+```bash
+node cli/unity-ai.js /path/to/UnityProject install
 ```
 
 Open Unity, then use:
@@ -85,6 +74,7 @@ Tools > Unity AI Connector > Print Token
 Call the connector with the prototype CLI:
 
 ```bash
+node cli/unity-ai.js /path/to/UnityProject doctor
 node cli/unity-ai.js /path/to/UnityProject health
 node cli/unity-ai.js /path/to/UnityProject tools
 node cli/unity-ai.js /path/to/UnityProject call scene.listOpen '{}'

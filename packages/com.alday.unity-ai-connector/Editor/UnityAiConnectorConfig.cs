@@ -1,6 +1,7 @@
 #if UNITY_EDITOR
 using System;
 using System.IO;
+using System.Security.Cryptography;
 using Newtonsoft.Json;
 using UnityEngine;
 
@@ -54,10 +55,14 @@ namespace Alday.UnityAiConnector.Editor
 
         static string GenerateToken()
         {
-            return Convert.ToBase64String(Guid.NewGuid().ToByteArray())
-                .Replace("+", "")
-                .Replace("/", "")
-                .Replace("=", "");
+            var bytes = new byte[32];
+            using (var generator = RandomNumberGenerator.Create())
+                generator.GetBytes(bytes);
+
+            return Convert.ToBase64String(bytes)
+                .Replace("+", "-")
+                .Replace("/", "_")
+                .TrimEnd('=');
         }
     }
 }

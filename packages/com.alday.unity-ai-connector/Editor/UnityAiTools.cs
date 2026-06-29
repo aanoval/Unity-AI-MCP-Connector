@@ -88,7 +88,7 @@ namespace Alday.UnityAiConnector.Editor
                 {
                     go.name,
                     path = GetPath(go),
-                    instanceId = go.GetInstanceID(),
+                    id = GetObjectId(go),
                     activeSelf = go.activeSelf,
                     scene = go.scene.name
                 })
@@ -112,7 +112,7 @@ namespace Alday.UnityAiConnector.Editor
 
             Undo.RegisterCreatedObjectUndo(go, "Create GameObject via Unity AI Connector");
             EditorSceneManager.MarkSceneDirty(go.scene);
-            return new { go.name, path = GetPath(go), instanceId = go.GetInstanceID() };
+            return new { go.name, path = GetPath(go), id = GetObjectId(go) };
         }
 
         static object SetTransform(JObject args)
@@ -145,7 +145,7 @@ namespace Alday.UnityAiConnector.Editor
                 {
                     type = component.GetType().FullName,
                     component.name,
-                    instanceId = component.GetInstanceID()
+                    id = GetObjectId(component)
                 })
                 .ToArray();
         }
@@ -234,6 +234,15 @@ namespace Alday.UnityAiConnector.Editor
             }
 
             return string.Join("/", names);
+        }
+
+        static string GetObjectId(UnityEngine.Object target)
+        {
+#if UNITY_6000_0_OR_NEWER
+            return target.GetEntityId().ToString();
+#else
+            return target.GetInstanceID().ToString();
+#endif
         }
     }
 }
